@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>La Casa Vacía</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: #06070a;
+      color: #d8dde3;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .fondo {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 20%, #12151c 0%, #06070a 75%);
+      z-index: 0;
+    }
+
+    .particula {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(130, 150, 180, 0.3);
+      border-radius: 50%;
+      animation: flotar linear infinite;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.7; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    .contenedor {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pantalla-inicio {
+      text-align: center;
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    .pantalla-inicio.oculta {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
+
+    .titulo {
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      margin-bottom: 16px;
+      color: #a8b6c8;
+      text-shadow: 0 0 30px rgba(120, 150, 190, 0.25);
+    }
+
+    .subtitulo {
+      font-size: 0.92rem;
+      color: #6b7688;
+      margin-bottom: 48px;
+      font-style: italic;
+      letter-spacing: 0.05em;
+      line-height: 1.7;
+    }
+
+    .btn-iniciar {
+      background: transparent;
+      border: 1.5px solid #5f7391;
+      color: #a8b6c8;
+      padding: 16px 48px;
+      font-size: 1.05rem;
+      font-family: inherit;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-iniciar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(120, 150, 190, 0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .btn-iniciar:active::before { opacity: 1; }
+    .btn-iniciar:active { transform: scale(0.97); }
+
+    .pantalla-juego {
+      display: none;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .pantalla-juego.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .hora {
+      font-size: 0.72rem;
+      color: #4a5568;
+      letter-spacing: 0.3em;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    .texto-historia {
+      font-size: 1.03rem;
+      line-height: 1.95;
+      color: #c0c8d4;
+      margin-bottom: 30px;
+      min-height: 180px;
+      letter-spacing: 0.02em;
+    }
+
+    .texto-historia .resaltado {
+      color: #8fa3c0;
+      font-style: italic;
+    }
+
+    .texto-historia .dolor {
+      color: #6e7d96;
+    }
+
+    .opciones {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-opcion {
+      background: rgba(120, 150, 190, 0.06);
+      border: 1px solid rgba(120, 150, 190, 0.22);
+      color: #b8c2d0;
+      padding: 14px 20px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.4s ease;
+      line-height: 1.45;
+      width: 100%;
+    }
+
+    .btn-opcion:active {
+      background: rgba(120, 150, 190, 0.18);
+      border-color: rgba(120, 150, 190, 0.45);
+      transform: scale(0.98);
+    }
+
+    .pantalla-final {
+      display: none;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 2s ease;
+    }
+
+    .pantalla-final.visible {
+      display: block;
+      opacity: 1;
+    }
+
+    .mensaje-final {
+      font-size: 1.08rem;
+      line-height: 2.05;
+      color: #98a8c0;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .btn-reiniciar {
+      background: transparent;
+      border: 1px solid rgba(120, 150, 190, 0.35);
+      color: #7a8ba8;
+      padding: 12px 32px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.4s ease;
+      margin-top: 16px;
+    }
+
+    .btn-reiniciar:active {
+      background: rgba(120, 150, 190, 0.15);
+      transform: scale(0.97);
+    }
+
+    .indicador-audio {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: #4a5568;
+      letter-spacing: 0.1em;
+    }
+
+    .indicador-audio.activo { display: flex; }
+
+    .punto-audio {
+      width: 6px;
+      height: 6px;
+      background: #7a8ba8;
+      border-radius: 50%;
+      animation: pulso 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulso {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    .barra-progreso {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #2f3a4a, #7a8ba8);
+      width: 0%;
+      transition: width 1s ease;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div class="fondo" id="fondo"></div>
+  <div class="barra-progreso" id="barraProgreso"></div>
+
+  <div class="indicador-audio" id="indicadorAudio">
+    <div class="punto-audio"></div>
+    <span>♫</span>
+  </div>
+
+  <div class="contenedor">
+    <div class="pantalla-inicio" id="pantallaInicio">
+      <h1 class="titulo">La Casa Vacía</h1>
+      <p class="subtitulo">
+        La historia de un chico que vivía solo.<br>
+        <span style="font-size: 0.78rem; opacity: 0.6;">— Ponte auriculares. Y prepárate. —</span>
+      </p>
+      <button class="btn-iniciar" id="btnIniciar">Iniciar Juego</button>
+    </div>
+
+    <div class="pantalla-juego" id="pantallaJuego">
+      <div class="hora" id="horaTexto"></div>
+      <p class="texto-historia" id="textoHistoria"></p>
+      <div class="opciones" id="opciones"></div>
+    </div>
+
+    <div class="pantalla-final" id="pantallaFinal">
+      <p class="mensaje-final" id="mensajeFinal"></p>
+      <button class="btn-reiniciar" id="btnReiniciar">Volver a empezar</button>
+    </div>
+  </div>
+
+  <audio id="audioFondo" loop preload="auto">
+    <source src="https://litter.catbox.moe/47p3n5gnm8rm4bi2.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // ===== HISTORIA (versión más triste) =====
+    const historia = {
+      inicio: {
+        hora: '6:47 AM',
+        texto: 'El despertador suena. Antes sonaba a las 6:30, cuando mamá preparaba el desayuno y la casa olía a pan tostado. Ahora suena a las 6:47, la hora exacta en que ella dejó de respirar en el hospital.<br><br><span class="resaltado">Lo puse a esa hora yo mismo. Para no olvidar.</span>',
+        opciones: [
+          { texto: 'Levantarte.', destino: 'levantar' },
+          { texto: 'Quedarte mirando el techo.', destino: 'techo' }
+        ]
+      },
+      techo: {
+        hora: '7:20 AM',
+        texto: 'El techo tiene una mancha con forma de nube. La miras hasta que el sol entra por la ventana. Recuerdas que mamá decía que esa mancha era una nube de verdad, que se había colado en la casa para cuidarnos.<br><br><span class="resaltado">Eras un niño y le creías.</span> Ahora miras la mancha y solo ves humedad.',
+        opciones: [
+          { texto: 'Levantarte por fin.', destino: 'levantar' },
+          { texto: 'Cerrar los ojos otra vez.', destino: 'cama' }
+        ]
+      },
+      cama: {
+        hora: '—',
+        texto: 'El sol cruza la habitación. Cuando despiertas otra vez ya es de noche. Así pasan los días. Así pasan los meses.<br><br>A veces sueñas que ella entra por la puerta y te dice que solo fue una pesadilla, que está todo bien. Y despiertas llorando porque <span class="resaltado">el sueño era mejor que la vida</span>.',
+        opciones: [
+          { texto: 'Forzarte a levantarte.', destino: 'levantar' },
+          { texto: 'Quedarte donde estás.', destino: 'final_cama' }
+        ]
+      },
+      levantar: {
+        hora: '9:30 AM',
+        texto: 'El pasillo cruje bajo tus pies. En la cocina hay un plato limpio en el escurridor. <span class="resaltado">Solo uno.</span> Ya no recuerdas cuándo guardaste los demás. Creo que fue la tarde en que entendiste que ya nadie más iba a sentarse a esa mesa.',
+        opciones: [
+          { texto: 'Preparar el desayuno.', destino: 'desayuno' },
+          { texto: 'Saltarte el desayuno.', destino: 'sin_desayuno' }
+        ]
+      },
+      desayuno: {
+        hora: '9:45 AM',
+        texto: 'Cocinas dos huevos. Por costumbre. Porque durante veinte años cocinaste dos: uno para ti, uno para ella.<br><br>Luego miras el plato extra que dejaste en la mesa. Está vacío. <span class="resaltado">Siempre va a estar vacío.</span> Lo guardas en la nevera. Mañana lo tirarás. Como todos los días.',
+        opciones: [
+          { texto: 'Sentarte a comer en silencio.', destino: 'ventana' },
+          { texto: 'Ir directo a la ventana.', destino: 'ventana' }
+        ]
+      },
+      sin_desayuno: {
+        hora: '9:50 AM',
+        texto: 'Abres la nevera. La luz te ilumina la cara como un reflector. Hay medio litro de leche y una manzana arrugada que ella compró la última semana.<br><br><span class="resaltado">No la has tirado. No puedes.</span><br><br>Cierras la puerta. No tienes hambre. Hace mucho que no tienes hambre.',
+        opciones: [
+          { texto: 'Ir a la ventana.', destino: 'ventana' },
+          { texto: 'Volver a la cama.', destino: 'cama' }
+        ]
+      },
+      ventana: {
+        hora: '11:10 AM',
+        texto: 'Desde la ventana ves a la familia de enfrente. La madre grita algo desde la cocina, el niño ríe, el padre carga las bolsas del mercado. Se cruzan palabras que no alcanzas a oír.<br><br>Hace tres años, en esa misma ventana, tu mamá te señalaba el cielo y te decía: <span class="resaltado">"Mira, hijo, ahí está tu papá."</span><br><br>Cierras las cortinas.',
+        opciones: [
+          { texto: 'Buscar el teléfono.', destino: 'telefono' },
+          { texto: 'Quedarte en silencio.', destino: 'silencio' }
+        ]
+      },
+      telefono: {
+        hora: '12:02 PM',
+        texto: 'Marcas el número de mamá. Lo tienes guardado como <span class="resaltado">"Mami ❤"</span>. Suena tres veces.<br><br>"Hola, has llamado al buzón de voz de..."<br><br>Es su voz. Su voz real, grabada hace años. Cuelgas antes del tono. Llevas tres años sin poder escucharla entera.',
+        opciones: [
+          { texto: 'Volver a marcar y dejar un mensaje.', destino: 'mensaje' },
+          { texto: 'Guardar el teléfono.', destino: 'silencio' }
+        ]
+      },
+      mensaje: {
+        hora: '12:05 PM',
+        texto: 'Después del tono, dices bajito:<br><br><span class="resaltado">"Hola mami. Soy yo. Solo... solo quería oír tu voz. Perdón por no haberte llevado al médico antes. Perdón por no haberme dado cuenta. Perdón por... por todo."</span><br><br>Silencio. Cuelgas. Lloras de pie, en medio del pasillo, como un niño perdido en un supermercado.',
+        opciones: [
+          { texto: 'Sentarte en el sofá.', destino: 'final_mensaje' }
+        ]
+      },
+      silencio: {
+        hora: '3:14 PM',
+        texto: 'Te sientas en el sofá. El reloj de la pared hace tic-tac. Ese reloj lo compró ella en un mercadillo. Le costó cinco euros. Le hizo tanta ilusión que lo puso en la pared nada más llegar a casa.<br><br>A las tres de la tarde te das cuenta de que <span class="resaltado">no has dicho una sola palabra en todo el día</span>. Ni en todo el mes. Ni en todo el año. Casi.',
+        opciones: [
+          { texto: 'Salir a la calle.', destino: 'salir' },
+          { texto: 'Quedarte ahí.', destino: 'final_silencio' }
+        ]
+      },
+      salir: {
+        hora: '6:40 PM',
+        texto: 'Caminas sin rumbo. La gente pasa a tu lado mirando el teléfono. En el parque, un anciano alimenta palomas. Te sientas en un banco.<br><br>Piensas en tu hermana. En cómo discutieron el día del funeral. En cómo ella se fue a otra ciudad y no volvió a llamar. En cómo tú tampoco llamaste. <span class="resaltado">Los dos esperando que el otro diera el primer paso. Tres años esperando.</span>',
+        opciones: [
+          { texto: 'Acercarte al anciano.', destino: 'anciano' },
+          { texto: 'Volver a casa.', destino: 'volver_casa' }
+        ]
+      },
+      anciano: {
+        hora: '7:15 PM',
+        texto: '"¿Sabes cuál es la peor parte de estar solo?", dice el anciano sin mirarte. "Que uno se acostumbra. Y cuando se acostumbra, ya no sabe cómo estar con nadie."<br><br>Te ofrece un trozo de pan. Lo aceptas. Comen en silencio mientras las palomas se pelean por las migas.<br><br>Le cuentas de tu mamá. De su voz en el buzón. De tu hermana. De los dos huevos. <span class="resaltado">De todo lo que nunca le has contado a nadie.</span>',
+        opciones: [
+          { texto: 'Quedarte un rato más.', destino: 'final_anciano' }
+        ]
+      },
+      volver_casa: {
+        hora: '8:30 PM',
+        texto: 'Vuelves a casa. Antes de meter la llave, miras por la ventana. La casa está oscura, como siempre. Pero por un segundo crees ver a mamá sentada en el sofá, esperándote con la cena hecha.<br><br>Parpadeas. No hay nadie.<br><br>La puerta se cierra detrás de ti. El silencio te recibe como siempre. <span class="resaltado">Como si nunca te hubieras ido. Como si nunca hubieras estado.</span>',
+        opciones: [
+          { texto: 'Sentarte en la oscuridad.', destino: 'final_silencio' }
+        ]
+      }
+    };
+
+    const finales = {
+      final_cama: {
+        texto: 'Te quedas en la cama. Los días se mezclan con las noches. Un martes crees que es domingo. Un domingo crees que es jueves.<br><br>Un día te das cuenta de que llevas tres semanas sin ducharte. Otras tres sin comer bien. Otras tres sin hablar con nadie.<br><br><span class="resaltado">Afuera la vida sigue. Adentro, tú te has detenido.</span> Y ya no sabes cómo volver a moverse.',
+        mensaje: 'A veces quedarse quieto<br>es la forma más silenciosa de desaparecer.'
+      },
+      final_mensaje: {
+        texto: 'Te sientas en el sofá con el teléfono en la mano. Lo miras como si pudiera sonar. No suena.<br><br>Miras la última conversación que tuviste con ella. Hace cinco años. Le escribiste: <span class="resaltado">"Luego te llamo, mami, estoy ocupado."</span><br><br>Ya no hay luego. Ya no hay después. Ya no hay un mañana en el que puedas llamarla.<br><br>Lo único que te queda es ese buzón de voz, y una frase que repetirás el resto de tu vida: <span class="resaltado">"Perdón por no haber estado."</span>',
+        mensaje: 'Hay llamadas que ya no se pueden hacer.<br>Y perdones que ya nadie puede darte.'
+      },
+      final_silencio: {
+        texto: 'Te quedas ahí, en la casa vacía. Las paredes conocen tus pasos de memoria. Los muebles saben dónde te sientas. La cama sabe a qué hora te acuestas.<br><br>Pero el sofá tiene una hendidura donde ella se sentaba. La cocina tiene su taza colgada en el gancho. La puerta de su cuarto sigue cerrada, tal y como la dejó.<br><br><span class="resaltado">Todo te conoce. Nadie te acompaña.</span><br><br>Y así pasan los años.',
+        mensaje: 'No es el ruido lo que asusta.<br>Es el silencio que se vuelve costumbre.'
+      },
+      final_anciano: {
+        texto: 'El anciano te cuenta que su esposa murió hace seis años. Que viene al parque todas las tardes porque en casa el silencio pesa más. Que ya casi no recuerda su voz, y eso le duele más que la muerte misma.<br><br>Le dices que tú tienes la voz de tu madre en un buzón. Que la escuchas cada noche antes de dormir. Que a veces marca solo para oírla decir "has llamado al buzón de voz de...".<br><br>El anciano te mira y sonríe con tristeza. "Entonces no estás tan solo como crees, muchacho."<br><br>Al despedirse, te da la mano. Es la primera vez en meses que alguien te toca.<br><br><span class="resaltado">Vuelves a casa. Pero esta noche, por primera vez, el silencio pesa un poco menos.</span>',
+        mensaje: 'A veces un extraño<br>es lo más cerca que estamos de no estar solos.'
+      }
+    };
+
+    // ===== REFERENCIAS DOM =====
+    const pantallaInicio = document.getElementById('pantallaInicio');
+    const pantallaJuego = document.getElementById('pantallaJuego');
+    const pantallaFinal = document.getElementById('pantallaFinal');
+    const textoHistoria = document.getElementById('textoHistoria');
+    const horaTexto = document.getElementById('horaTexto');
+    const opcionesDiv = document.getElementById('opciones');
+    const mensajeFinal = document.getElementById('mensajeFinal');
+    const btnIniciar = document.getElementById('btnIniciar');
+    const btnReiniciar = document.getElementById('btnReiniciar');
+    const audio = document.getElementById('audioFondo');
+    const indicadorAudio = document.getElementById('indicadorAudio');
+    const barraProgreso = document.getElementById('barraProgreso');
+    const fondo = document.getElementById('fondo');
+
+    let nodoActual = 'inicio';
+    let juegoIniciado = false;
+
+    // ===== PARTÍCULAS =====
+    function crearParticulas() {
+      for (let i = 0; i < 22; i++) {
+        const p = document.createElement('div');
+        p.className = 'particula';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (9 + Math.random() * 14) + 's';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        p.style.opacity = 0.08 + Math.random() * 0.25;
+        fondo.appendChild(p);
+      }
+    }
+    crearParticulas();
+
+    // ===== FUNCIONES =====
+    function mostrarNodo(nodo) {
+      nodoActual = nodo;
+      const datos = historia[nodo];
+      if (!datos) return;
+
+      textoHistoria.style.opacity = '0';
+      opcionesDiv.style.opacity = '0';
+      horaTexto.style.opacity = '0';
+
+      setTimeout(() => {
+        horaTexto.textContent = datos.hora || '';
+        textoHistoria.innerHTML = datos.texto;
+
+        horaTexto.style.transition = 'opacity 0.6s ease';
+        textoHistoria.style.transition = 'opacity 0.8s ease';
+        horaTexto.style.opacity = '1';
+        textoHistoria.style.opacity = '1';
+
+        opcionesDiv.innerHTML = '';
+        datos.opciones.forEach(op => {
+          const btn = document.createElement('button');
+          btn.className = 'btn-opcion';
+          btn.textContent = op.texto;
+          btn.addEventListener('click', () => {
+            if (op.destino.startsWith('final_')) {
+              mostrarFinal(op.destino);
+            } else {
+              mostrarNodo(op.destino);
+            }
+          });
+          opcionesDiv.appendChild(btn);
+        });
+
+        opcionesDiv.style.transition = 'opacity 0.8s ease';
+        opcionesDiv.style.opacity = '1';
+      }, 300);
+
+      const mapaProgreso = {
+        inicio: 5, techo: 15, cama: 25, levantar: 25,
+        desayuno: 40, sin_desayuno: 40, ventana: 55,
+        telefono: 70, mensaje: 85, silencio: 70,
+        salir: 85, anciano: 95, volver_casa: 95
+      };
+      barraProgreso.style.width = (mapaProgreso[nodo] || 50) + '%';
+    }
+
+    function mostrarFinal(clave) {
+      const fin = finales[clave];
+      pantallaJuego.classList.remove('visible');
+      setTimeout(() => {
+        pantallaFinal.classList.add('visible');
+        mensajeFinal.innerHTML = fin.texto + '<br><br><span style="font-size: 0.95rem; opacity: 0.8;">' + fin.mensaje + '</span>';
+      }, 600);
+      barraProgreso.style.width = '100%';
+    }
+
+    function iniciarJuego() {
+      if (juegoIniciado) return;
+      juegoIniciado = true;
+
+      audio.volume = 0.7;
+      audio.play().catch(e => console.log('Audio bloqueado:', e));
+      indicadorAudio.classList.add('activo');
+
+      pantallaInicio.classList.add('oculta');
+      setTimeout(() => {
+        pantallaInicio.style.display = 'none';
+        pantallaJuego.classList.add('visible');
+        mostrarNodo('inicio');
+      }, 1000);
+    }
+
+    function reiniciar() {
+      pantallaFinal.classList.remove('visible');
+      setTimeout(() => {
+        pantallaFinal.style.display = 'none';
+        pantallaFinal.style.display = '';
+        mensajeFinal.innerHTML = '';
+        barraProgreso.style.width = '0%';
+        pantallaJuego.classList.add('visible');
+        mostrarNodo('inicio');
+      }, 600);
+    }
+
+    btnIniciar.addEventListener('click', iniciarJuego);
+    btnReiniciar.addEventListener('click', reiniciar);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        audio.pause();
+      } else if (juegoIniciado) {
+        audio.play().catch(() => {});
+      }
+    });
+  </script>
+</body>
+      </html>
